@@ -48,6 +48,7 @@ public class AuthorizeController {
            user.setAccountId(githubUser.getId()+"");
            user.setGmtCreate(System.currentTimeMillis());
            user.setGmtModified(user.getGmtCreate());
+           user.setAvataUrl(githubUser.getAvatar_url());
            userMapper.insert(user);
         //登录成功 session在HttpServletRequest 写好session 即在银行里建了账号
            //request.getSession().setAttribute("user",githubUser);
