@@ -29,34 +29,41 @@ public class AuthorizeController {
     private GithubProvider githubProvider;
     @Autowired
     private UserMapper userMapper;
+
     @GetMapping("/callback")
-    public  String callback(@RequestParam(name = "code") String code,
-                            @RequestParam(name = "state") String state,
-                            HttpServletResponse response){
+    public String callback(@RequestParam(name = "code") String code,
+                           @RequestParam(name = "state") String state,
+                           HttpServletResponse response) {
         AccessTokenDTO accessTokenDTO = new AccessTokenDTO();
         accessTokenDTO.setClient_id(clientId);
         accessTokenDTO.setClient_secret(clientSecret);
         accessTokenDTO.setCode(code);
         accessTokenDTO.setRedirect_uri(redirectUri);
         accessTokenDTO.setState(state);
-    String token=    githubProvider.getAccessToken(accessTokenDTO);
-    GithubUser githubUser=githubProvider.getUser(token);
-       if (githubUser!=null){
-           User user = new User();
-           user.setName(githubUser.getName());
-           user.setToken(UUID.randomUUID().toString());
-           user.setAccountId(githubUser.getId()+"");
-           user.setGmtCreate(System.currentTimeMillis());
-           user.setGmtModified(user.getGmtCreate());
-           user.setAvataUrl(githubUser.getAvatar_url());
-           userMapper.insert(user);
-        //登录成功 session在HttpServletRequest 写好session 即在银行里建了账号
-           //request.getSession().setAttribute("user",githubUser);
-           response.addCookie(new Cookie("token",user.getToken()));
-           return "redirect:/";
-       }else {
-         //重新登录
-           return "redirect:/";
-       }
+        String token = githubProvider.getAccessToken(accessTokenDTO);
+        GithubUser githubUser = githubProvider.getUser(token);
+        if (githubUser != null) {
+            User user = new User();
+            user.setName(githubUser.getName());
+            user.setToken(UUID.randomUUID().toString());
+            user.setAccountId(githubUser.getId() + "");
+            user.setGmtCreate(System.currentTimeMillis());
+            user.setGmtModified(user.getGmtCreate());
+            user.setAvatarUrl(githubUser.getAvatarUrl());
+            User user1 = userMapper.findByAccountId(githubUser.getId() + "");
+            if (user1 != null) {
+                userMapper.update(user);
+            } else {
+                userMapper.insert(user);
+            }
+
+            //登录成功 session在HttpServletRequest 写好session 即在银行里建了账号
+            //request.getSession().setAttribute("user",githubUser);
+            response.addCookie(new Cookie("token", user.getToken()));
+            return "redirect:/";
+        } else {
+            //重新登录
+            return "redirect:/";
+        }
     }
 }

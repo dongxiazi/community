@@ -10,12 +10,10 @@ import org.springframework.ui.Model;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
@@ -26,42 +24,32 @@ public class PublishController {
     private UserMapper userMapper;
     @Autowired
     private QuestionMapper questionMapper;
+
     @GetMapping("/publish")
-    public String publish(@ModelAttribute("question") Question question){
+    public String publish(@ModelAttribute("question") Question question) {
         return "publish";
     }
+
     @PostMapping("/publish")
     public String doPublish(@Valid @ModelAttribute("question")
-                                        Question question,
+                                    Question question,
                             BindingResult bindingResult,
                             HttpServletRequest request,
-                            Model model){
-      if (bindingResult.hasErrors()){
-          List<ObjectError>  list=bindingResult.getAllErrors();
-          StringBuffer sb=new StringBuffer();
-          for (ObjectError error:list){
-             sb.append(error);
-          }
-          model.addAttribute("error",sb.toString());
-          return "/publish";
-      }
-        Cookie[] cookies=request.getCookies();
-      User user=null;
-      if (!ObjectUtils.isEmpty(cookies)){
-          for (Cookie cookie:cookies){
-              if (cookie.getName().equals("token")){
-                  String token=cookie.getValue();
-                  System.out.println(token);
-                   user=userMapper.findByToken(token);
-                  break;
-              }
-
-          }
-          if (ObjectUtils.isEmpty(user)){
-              model.addAttribute("error","用户未登陆");
-              return "/publish";
-          }
-      }
+                            Model model) {
+        if (bindingResult.hasErrors()) {
+            List<ObjectError> list = bindingResult.getAllErrors();
+            StringBuffer sb = new StringBuffer();
+            for (ObjectError error : list) {
+                sb.append(error);
+            }
+            model.addAttribute("error", sb.toString());
+            return "/publish";
+        }
+        User user = (User) request.getSession().getAttribute("user");
+        if (ObjectUtils.isEmpty(user)) {
+            model.addAttribute("error", "用户未登陆");
+            return "/publish";
+        }
 
         question.setCreator(user.getId());
         question.setGmtCreate(System.currentTimeMillis());
