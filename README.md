@@ -29,3 +29,4 @@ ENGINE=InnoDB
 ;
 
 ```
+mvn -Dmybatis.generator.overwrite=true mybatis-generator:generate

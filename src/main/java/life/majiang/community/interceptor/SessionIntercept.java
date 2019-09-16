@@ -2,14 +2,18 @@ package life.majiang.community.interceptor;
 
 import life.majiang.community.mapper.UserMapper;
 import life.majiang.community.model.User;
+import life.majiang.community.model.UserExample;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
+
 @Component
 public class SessionIntercept implements HandlerInterceptor {
     @Autowired
@@ -21,9 +25,11 @@ public class SessionIntercept implements HandlerInterceptor {
             for (Cookie cookie : cookies) {
                 if ("token".equals(cookie.getName())){
                      String value=cookie.getValue();
-                     User user=userMapper.findByToken(value);
-                     if (null!=user){
-                         request.getSession().setAttribute("user",user);
+                    UserExample example = new UserExample();
+                    example.createCriteria().andTokenEqualTo(value);
+                   List<User> users= userMapper.selectByExample(example);
+                     if (!ObjectUtils.isEmpty(users)){
+                         request.getSession().setAttribute("user",users.get(0));
                      }
                      break;
                 }

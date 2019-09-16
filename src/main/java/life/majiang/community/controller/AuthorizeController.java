@@ -5,6 +5,7 @@ import life.majiang.community.dto.GithubUser;
 import life.majiang.community.mapper.UserMapper;
 import life.majiang.community.model.User;
 import life.majiang.community.provider.GithubProvider;
+import life.majiang.community.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -28,7 +29,7 @@ public class AuthorizeController {
     @Autowired
     private GithubProvider githubProvider;
     @Autowired
-    private UserMapper userMapper;
+    private UserService userService;
 
     @GetMapping("/callback")
     public String callback(@RequestParam(name = "code") String code,
@@ -50,12 +51,13 @@ public class AuthorizeController {
             user.setGmtCreate(System.currentTimeMillis());
             user.setGmtModified(user.getGmtCreate());
             user.setAvatarUrl(githubUser.getAvatarUrl());
-            User user1 = userMapper.findByAccountId(githubUser.getId() + "");
-            if (user1 != null) {
-                userMapper.update(user);
-            } else {
-                userMapper.insert(user);
-            }
+//            User user1 = userService.findByAccountId(githubUser.getId() + "");
+//            if (user1 != null) {
+//                userService.update(user);
+//            } else {
+//                userService.insert(user);
+//            }
+            userService.createOrUpdate(user);
 
             //登录成功 session在HttpServletRequest 写好session 即在银行里建了账号
             //request.getSession().setAttribute("user",githubUser);
@@ -65,5 +67,13 @@ public class AuthorizeController {
             //重新登录
             return "redirect:/";
         }
+    }
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request,HttpServletResponse response){
+     request.getSession().removeAttribute("user");
+     Cookie cookie=new Cookie("token",null);
+     cookie.setMaxAge(0);
+     response.addCookie(cookie);
+     return "redirect:/";
     }
 }
