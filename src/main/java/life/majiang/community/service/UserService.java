@@ -27,8 +27,9 @@ public class UserService {
         UserExample example = new UserExample();
         example.createCriteria().andAccountIdEqualTo(user.getAccountId());
         List<User> users = userMapper.selectByExample(example);
-         if (!ObjectUtils.isEmpty(users)) {
+         if (users.size()!=0) {
              User dbuser=users.get(0);
+             user.setId(dbuser.getId());
              BeanUtils.copyProperties(user,dbuser);
              dbuser.setGmtModified(System.currentTimeMillis());
              UserExample userExample = new UserExample();
