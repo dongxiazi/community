@@ -4,6 +4,7 @@ import life.majiang.community.dto.PaginationDTO;
 import life.majiang.community.dto.QuestionDTO;
 import life.majiang.community.exception.CustomizeErrorCode;
 import life.majiang.community.exception.CustomizeException;
+import life.majiang.community.mapper.QuestionExMapper;
 import life.majiang.community.mapper.QuestionMapper;
 import life.majiang.community.mapper.UserMapper;
 import life.majiang.community.model.Question;
@@ -20,6 +21,8 @@ import java.util.List;
 public class QuestionService {
     @Autowired
     private QuestionMapper questionMapper;
+    @Autowired
+    private QuestionExMapper questionExMapper;
     @Autowired
     private UserMapper userMapper;
     public PaginationDTO list(Integer page, Integer size) {
@@ -103,4 +106,26 @@ public class QuestionService {
             questionMapper.insert(question);
         }
     }
+
+    public void incViewCount(Integer id) {
+        Question question=new Question();
+        question.setId(id);
+        question.setViewCount(1);
+        questionExMapper.incViewCount(question);
+    }
+
+    /**
+     * 此种更改会出现多人并发访问时，更新操作有脏数据，摒弃
+     * @param id
+     */
+
+//    public void incViewCount(Integer id) {
+//      Question question=  questionMapper.selectByPrimaryKey(id);
+//        Question updateRecord = new Question();
+//        updateRecord.setId(id);
+//        updateRecord.setViewCount(question.getViewCount()+1);
+//        QuestionExample example = new QuestionExample();
+//        example.createCriteria().andIdEqualTo(id);
+//        questionMapper.updateByExampleSelective(updateRecord, example);
+//    }
 }
